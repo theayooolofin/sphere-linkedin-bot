@@ -8,8 +8,9 @@ token = os.environ["LINKEDIN_ACCESS_TOKEN"]
 urn = os.environ["LINKEDIN_PERSON_URN"]
 
 def generate_post():
-    # Changed from gemini-1.5-flash to gemini-pro for better compatibility
-    model = genai.GenerativeModel('gemini-pro')
+    # Updated to the current standard model name
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    
     prompt = """
     Write a LinkedIn post in my voice. 
     Style: Punchy-Minimalist. No long paragraphs. Use white space.
@@ -17,6 +18,8 @@ def generate_post():
     Topics: Sales mindset, AI efficiency, or the 'luxurious' engineering behind Sphere.ng.
     End with a sharp one-sentence takeaway.
     """
+    
+    # Using the standard generation method
     response = model.generate_content(prompt)
     return response.text
 
@@ -27,6 +30,7 @@ def post_to_linkedin(content):
         "X-Restli-Protocol-Version": "2.0.0",
         "Content-Type": "application/json"
     }
+    
     post_data = {
         "author": f"urn:li:person:{urn}",
         "lifecycleState": "PUBLISHED",
@@ -38,13 +42,20 @@ def post_to_linkedin(content):
         },
         "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"}
     }
+    
     r = requests.post(url, headers=headers, json=post_data)
+    
     if r.status_code == 201:
-        print("✅ Success!")
+        print("✅ Success! Post is live.")
     else:
-        print(f"❌ Failed: {r.status_code}, {r.text}")
+        print(f"❌ Failed: {r.status_code}")
+        print(f"Details: {r.text}")
         exit(1)
 
 if __name__ == "__main__":
-    text = generate_post()
-    post_to_linkedin(text)
+    try:
+        text = generate_post()
+        post_to_linkedin(text)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        exit(1)
