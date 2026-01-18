@@ -1,0 +1,29 @@
+name: Sphere Daily Post
+on:
+  schedule:
+    # This is set to 8:00 AM UTC. 
+    # (Note: 8:00 AM UTC is 9:00 AM in Lagos/WAT)
+    - cron: '0 8 * * *'
+  workflow_dispatch: # This adds a 'Run' button for manual testing
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: pip install requests google-generativeai
+
+      - name: Run Bot
+        env:
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          LINKEDIN_PERSON_URN: ${{ secrets.LINKEDIN_PERSON_URN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python bot.py
