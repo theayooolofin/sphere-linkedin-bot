@@ -8,11 +8,11 @@ token = os.environ["LINKEDIN_ACCESS_TOKEN"]
 urn = os.environ["LINKEDIN_PERSON_URN"]
 
 def generate_post():
-    model = genai.GenerativeModel('gemini-1.5-flash')
-    # This prompt uses your "Punchy-Minimalist" voice
+    # Changed from gemini-1.5-flash to gemini-pro for better compatibility
+    model = genai.GenerativeModel('gemini-pro')
     prompt = """
     Write a LinkedIn post in my voice. 
-    Style: Punchy-Minimalist. No long paragraphs. Use lots of white space.
+    Style: Punchy-Minimalist. No long paragraphs. Use white space.
     Tone: Authoritative and direct. No corporate fluff.
     Topics: Sales mindset, AI efficiency, or the 'luxurious' engineering behind Sphere.ng.
     End with a sharp one-sentence takeaway.
@@ -27,7 +27,6 @@ def post_to_linkedin(content):
         "X-Restli-Protocol-Version": "2.0.0",
         "Content-Type": "application/json"
     }
-    
     post_data = {
         "author": f"urn:li:person:{urn}",
         "lifecycleState": "PUBLISHED",
@@ -39,16 +38,11 @@ def post_to_linkedin(content):
         },
         "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"}
     }
-    
     r = requests.post(url, headers=headers, json=post_data)
-    
-    # Improved error checking to help you debug in GitHub Actions
     if r.status_code == 201:
-        print("✅ Post successful!")
+        print("✅ Success!")
     else:
-        print(f"❌ Post failed with status: {r.status_code}")
-        print(f"Response details: {r.text}")
-        # This will make the GitHub Action show as 'failed' so you know to check it
+        print(f"❌ Failed: {r.status_code}, {r.text}")
         exit(1)
 
 if __name__ == "__main__":
