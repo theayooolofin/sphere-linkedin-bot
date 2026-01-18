@@ -9,7 +9,7 @@ urn = os.environ["LINKEDIN_PERSON_URN"]
 
 def generate_post():
     model = genai.GenerativeModel('gemini-1.5-flash')
-    # This prompt uses your "Punchy-Minimalist" style
+    # This prompt uses your "Punchy-Minimalist" voice
     prompt = """
     Write a LinkedIn post in my voice. 
     Style: Punchy-Minimalist. No long paragraphs. Use lots of white space.
@@ -22,7 +22,12 @@ def generate_post():
 
 def post_to_linkedin(content):
     url = "https://api.linkedin.com/v2/ugcPosts"
-    headers = {"Authorization": f"Bearer {token}", "X-Restli-Protocol-Version": "2.0.0"}
+    headers = {
+        "Authorization": f"Bearer {token}", 
+        "X-Restli-Protocol-Version": "2.0.0",
+        "Content-Type": "application/json"
+    }
+    
     post_data = {
         "author": f"urn:li:person:{urn}",
         "lifecycleState": "PUBLISHED",
@@ -34,8 +39,17 @@ def post_to_linkedin(content):
         },
         "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"}
     }
+    
     r = requests.post(url, headers=headers, json=post_data)
-    print(f"Post Status: {r.status_code}")
+    
+    # Improved error checking to help you debug in GitHub Actions
+    if r.status_code == 201:
+        print("✅ Post successful!")
+    else:
+        print(f"❌ Post failed with status: {r.status_code}")
+        print(f"Response details: {r.text}")
+        # This will make the GitHub Action show as 'failed' so you know to check it
+        exit(1)
 
 if __name__ == "__main__":
     text = generate_post()
