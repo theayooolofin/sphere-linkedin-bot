@@ -1,10 +1,8 @@
 name: Sphere Daily Post
 on:
   schedule:
-    # This is set to 8:00 AM UTC. 
-    # (Note: 8:00 AM UTC is 9:00 AM in Lagos/WAT)
     - cron: '0 8 * * *'
-  workflow_dispatch: # This adds a 'Run' button for manual testing
+  workflow_dispatch:
 
 jobs:
   post:
@@ -16,10 +14,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: '3.10' # Upgraded for better Gemini support
 
       - name: Install dependencies
-        run: pip install requests google-generativeai
+        run: |
+          pip install --upgrade pip
+          pip install requests google-generativeai
 
       - name: Run Bot
         env:
