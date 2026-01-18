@@ -8,8 +8,8 @@ token = os.environ["LINKEDIN_ACCESS_TOKEN"]
 urn = os.environ["LINKEDIN_PERSON_URN"]
 
 def generate_post():
-    # Updated to the current standard model name
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # Using 'gemini-1.5-flash-latest' to avoid the 404 error
+    model = genai.GenerativeModel('gemini-1.5-flash-latest')
     
     prompt = """
     Write a LinkedIn post in my voice. 
@@ -19,7 +19,6 @@ def generate_post():
     End with a sharp one-sentence takeaway.
     """
     
-    # Using the standard generation method
     response = model.generate_content(prompt)
     return response.text
 
