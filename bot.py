@@ -1,26 +1,18 @@
 import os
 import requests
-import google.generativeai as genai
+from google import genai
 
-# Setup from GitHub Secrets
-genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+# Setup using the NEW library
+client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 token = os.environ["LINKEDIN_ACCESS_TOKEN"]
 urn = os.environ["LINKEDIN_PERSON_URN"]
 
 def generate_post():
-    # Use the stable model name to prevent 404 errors
-    model = genai.GenerativeModel('gemini-1.5-flash')
-    
-    # Using your "Punchy-Minimalist" style rules
-    prompt = """
-    Write a LinkedIn post in my voice. 
-    Style: Punchy-Minimalist. Short, one-sentence paragraphs. Use white space.
-    Tone: Authoritative and direct. No corporate fluff.
-    Hook: Start with a provocative hook about sales or AI efficiency.
-    Ending: A sharp one-sentence takeaway.
-    Topics: Sales mindset, AI automation, or the 'luxurious' engineering of Sphere.ng.
-    """
-    response = model.generate_content(prompt)
+    # Using the most stable modern model
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents="Write a punchy, minimalist LinkedIn post about sales or AI efficiency. Use short sentences and lots of white space."
+    )
     return response.text
 
 def post_to_linkedin(content):
@@ -43,7 +35,7 @@ def post_to_linkedin(content):
     }
     r = requests.post(url, headers=headers, json=post_data)
     if r.status_code == 201:
-        print("✅ Success! Post is live on LinkedIn.")
+        print("✅ Success!")
     else:
         print(f"❌ Failed: {r.status_code}, {r.text}")
         exit(1)
