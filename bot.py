@@ -1,31 +1,35 @@
 import os
 import time
+import random
 import requests
-from google import genai
-from google.genai import errors
+from openai import OpenAI
 
-# Setup
-client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+# Setup from GitHub Secrets
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 token = os.environ["LINKEDIN_ACCESS_TOKEN"]
 urn = os.environ["LINKEDIN_PERSON_URN"]
 
 def generate_post():
-    MAX_RETRIES = 3
-    # Your minimalist, authoritative prompt
-    prompt_text = "Write a punchy, minimalist LinkedIn post about sales or AI efficiency. Use short sentences and lots of white space."
+    MAX_RETRIES = 5
+    prompt_text = (
+        "Write a punchy, minimalist LinkedIn post about sales or AI efficiency. "
+        "Style: No long paragraphs. Use lots of white space. Tone: Authoritative. "
+        "End with a sharp one-sentence takeaway."
+    )
     
     for attempt in range(MAX_RETRIES):
         try:
-            response = client.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=prompt_text
+            # Using GPT-4o-mini: It's fast, cheap, and very reliable
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt_text}]
             )
-            return response.text
-        except errors.ClientError as e:
-            # If we hit the 429 quota limit, wait 60 seconds and try again
+            return response.choices[0].message.content
+        except Exception as e:
             if "429" in str(e) and attempt < MAX_RETRIES - 1:
-                print(f"Quota hit. Retrying in 60 seconds... (Attempt {attempt + 1})")
-                time.sleep(60)
+                delay = 2.0 * (2 ** attempt) + random.uniform(0, 1)
+                print(f"Rate limit hit. Retrying in {delay:.1f}s...")
+                time.sleep(delay)
             else:
                 raise e
 
@@ -49,9 +53,9 @@ def post_to_linkedin(content):
     }
     r = requests.post(url, headers=headers, json=post_data)
     if r.status_code == 201:
-        print("✅ Success! The post is live.")
+        print("✅ Success! OpenAI-generated post is live.")
     else:
-        print(f"❌ LinkedIn Post Failed: {r.status_code}, {r.text}")
+        print(f"❌ LinkedIn Error: {r.status_code}, {r.text}")
         exit(1)
 
 if __name__ == "__main__":
