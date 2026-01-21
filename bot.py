@@ -2,13 +2,13 @@ import os
 import requests
 from openai import OpenAI
 
-# Setup
+# Setup from GitHub
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 token = os.environ["LINKEDIN_ACCESS_TOKEN"]
 raw_id = os.environ["LINKEDIN_PERSON_URN"]
 
 def generate_post():
-    prompt_text = "Write a punchy, minimalist LinkedIn post about sales mindset or AI. Use lots of white space."
+    prompt_text = "Write a punchy, minimalist LinkedIn post about sales or AI efficiency. Use lots of white space."
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt_text}]
@@ -23,11 +23,11 @@ def post_to_linkedin(content):
         "Content-Type": "application/json"
     }
     
-    # Ensure no accidental prefixes exist in the raw_id
-    clean_id = str(raw_id).replace("urn:li:person:", "").replace("urn:li:member:", "")
+    # Cleaning the ID to prevent double-prefixing which causes the 403 error
+    clean_id = str(raw_id).replace("urn:li:person:", "").replace("urn:li:member:", "").strip()
     
     post_data = {
-        # Using the exact namespace requested by your 422 error log
+        # Using 'member' namespace as strictly required by LinkedIn for individual profiles
         "author": f"urn:li:member:{clean_id}",
         "lifecycleState": "PUBLISHED",
         "specificContent": {
@@ -40,10 +40,11 @@ def post_to_linkedin(content):
     }
     
     r = requests.post(url, headers=headers, json=post_data)
+    
     if r.status_code == 201:
-        print("✅ SUCCESS! Your automated post is live.")
+        print("✅ SUCCESS! The automated post is finally live.")
     else:
-        print(f"❌ Final Error: {r.status_code}")
+        print(f"❌ LinkedIn Error: {r.status_code}")
         print(f"Details: {r.text}")
         exit(1)
 
