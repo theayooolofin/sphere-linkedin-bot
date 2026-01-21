@@ -2,7 +2,7 @@ import os
 import requests
 from openai import OpenAI
 
-# Setup from GitHub
+# Setup
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 token = os.environ["LINKEDIN_ACCESS_TOKEN"]
 raw_id = os.environ["LINKEDIN_PERSON_URN"]
@@ -23,11 +23,11 @@ def post_to_linkedin(content):
         "Content-Type": "application/json"
     }
     
-    # Cleaning the ID to prevent double-prefixing which causes the 403 error
+    # This line prevents the 'Data Processing Exception' by ensuring no double prefixes
     clean_id = str(raw_id).replace("urn:li:person:", "").replace("urn:li:member:", "").strip()
     
     post_data = {
-        # Using 'member' namespace as strictly required by LinkedIn for individual profiles
+        # Using the exact namespace requested by your 422 error logs
         "author": f"urn:li:member:{clean_id}",
         "lifecycleState": "PUBLISHED",
         "specificContent": {
