@@ -2,16 +2,16 @@ import os
 import requests
 from openai import OpenAI
 
-# Setup
+# Initialize
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 token = os.environ["LINKEDIN_ACCESS_TOKEN"]
-member_id = os.environ["LINKEDIN_PERSON_URN"]
+raw_id = os.environ["LINKEDIN_PERSON_URN"]
 
 def generate_post():
-    prompt_text = "Write a short, punchy LinkedIn post about AI sales efficiency. Use white space."
+    # Punchy-minimalist voice
     response = client.chat.completions.create(
         model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt_text}]
+        messages=[{"role": "user", "content": "Write a short, punchy LinkedIn post about AI sales efficiency. Use lots of white space."}]
     )
     return response.choices[0].message.content
 
@@ -23,8 +23,8 @@ def post_to_linkedin(content):
         "Content-Type": "application/json"
     }
     
-    # We clean the ID just in case
-    clean_id = str(member_id).strip()
+    # Strip any accidental prefixes to prevent the 'Data Processing' error
+    clean_id = str(raw_id).replace("urn:li:person:", "").replace("urn:li:member:", "").strip()
     
     post_data = {
         # Using the strictly required member namespace with your verified ID
@@ -41,7 +41,7 @@ def post_to_linkedin(content):
     
     r = requests.post(url, headers=headers, json=post_data)
     if r.status_code == 201:
-        print("✅ SUCCESS! Your first automated post is live.")
+        print("✅ SUCCESS! Your automated post is finally live.")
     else:
         print(f"❌ FAILED: {r.status_code}")
         print(f"Details: {r.text}")
