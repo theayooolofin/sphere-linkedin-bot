@@ -59,7 +59,7 @@ def build_post_payload(content: str, raw_member_id: str) -> dict[str, Any]:
     post_text = _normalize_post_text(content)
 
     return {
-        "author": f"urn:li:person:{member_id}",
+        "author": f"urn:li:member:{member_id}",
         "lifecycleState": "PUBLISHED",
         "specificContent": {
             "com.linkedin.ugc.ShareContent": {
